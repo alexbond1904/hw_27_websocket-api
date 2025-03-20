@@ -58,5 +58,4 @@ webSocketServer.on('connection', (ws: WebSocket) => {
         onlineCountSend();
     };
 });
-
 console.log('WebSocket server running on ws://localhost:8080');
