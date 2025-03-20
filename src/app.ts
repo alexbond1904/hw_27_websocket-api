@@ -13,6 +13,7 @@ const onlineCountSend = () => {
 };
 
 webSocketServer.on('connection', (ws: WebSocket) => {
+    console.log("Size: "+ (clients.size+1))
     onlineCountSend();
 
     ws.onmessage = (message) => {
@@ -22,8 +23,9 @@ webSocketServer.on('connection', (ws: WebSocket) => {
             const data = JSON.parse(message.data + "");
 
             if (data.type === 'register') {
-                const checkLogin = [...clients.values()].includes(data.name);
-                if (checkLogin) {
+                const availableLogin = ![...clients.values()].includes(data.name);
+                clients.set(ws, availableLogin ? data.name : '');
+                if (!availableLogin) {
                     ws.send(JSON.stringify({
                         type: "error",
                         name: data.name,
@@ -31,15 +33,13 @@ webSocketServer.on('connection', (ws: WebSocket) => {
                     }));
                     return;
                 }
-
-                clients.set(ws, data.name);
                 ws.send(JSON.stringify({ type: "registered", name: data.name }));
                 onlineCountSend();
             } else if (!clients.get(ws)) {
                 ws.send(JSON.stringify({ type: "error", message: "You are not registered in chat" }));
             } else if (data.type === 'message') {
-                webSocketServer.clients.forEach((client) => {
-                    if (client.readyState === WebSocket.OPEN) {
+                clients.forEach((name, client) => {
+                    if (client.readyState === WebSocket.OPEN && name != '') {
                         client.send(JSON.stringify({
                             message: data.message,
                             name: clients.get(ws),
