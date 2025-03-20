@@ -13,8 +13,8 @@ const onlineCountSend = () => {
 };
 
 webSocketServer.on('connection', (ws: WebSocket) => {
-    console.log("Size: "+ (clients.size+1))
     onlineCountSend();
+    console.log("Users online: "+ (clients.size+1))
 
     ws.onmessage = (message) => {
         const currentTime = new Date();
@@ -56,6 +56,7 @@ webSocketServer.on('connection', (ws: WebSocket) => {
     ws.onclose = () => {
         clients.delete(ws);
         onlineCountSend();
+        console.log("Users online: "+ (clients.size))
     };
 });
 console.log('WebSocket server running on ws://localhost:8080');
